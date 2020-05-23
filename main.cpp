@@ -6,10 +6,17 @@
 int main(int argc, char *argv[])
 {
 
-    std::vector<std::string> data_vec = {"Data0"};
-
+    std::vector<std::string> data_vec = {"Data0", "Data1"};
     
-    AxialForceDataset axial_data(data_vec);
+    // std::string data_vec = "Data1";
+    
+    AxialForceDataset axial_data[2];
+
+    for (int i = 0; i < 2; i++)
+    {
+        axial_data[i].get_data(data_vec[i]);
+    }
+
 
     return 0;
 }

@@ -7,12 +7,12 @@
 class AxialForceDataset
 {
 public:
-    AxialForceDataset(std::string data_id); 
-    AxialForceDataset(std::vector<std::string> data_ids);
-    AxialForceDataset();
+    AxialForceDataset(); 
     ~AxialForceDataset();
 
-
+    // Getters
+    u_int64_t get_dataset_size(void) { return m_dataset_size; }
+    void get_data(std::string data_id);
 
 private:
 
@@ -25,11 +25,13 @@ private:
     nlohmann::json m_j_file;
 
 private:
-    void get_data(std::string data_n);
-    void read_json_file(void);
+    
     void parse_json(nlohmann::json &val);
 
 private:
+   
+    /* Dataset size */
+    u_int64_t m_dataset_size;
 
     /* Source section variables */
     std::string m_author_name;
@@ -89,43 +91,22 @@ protected:
 };
 
 
-AxialForceDataset::AxialForceDataset(std::string data_id)
-{
-    read_json_file();
-    get_data(data_id);
-}
-
-
-AxialForceDataset::AxialForceDataset(std::vector<std::string> data_ids)
-{
-    read_json_file();
-    for(std::vector<std::string>::size_type i = 0; i != data_ids.size(); i++ )
-    {
-        get_data(data_ids[i]);
-    }
-}
-
-
 AxialForceDataset::AxialForceDataset()
-{
-    read_json_file();
-}
-
-
-/**************** Methods *****************/
-void AxialForceDataset::read_json_file(void)
 {
     // Read json file
     m_file = std::ifstream(m_data_file);
     m_j_file = nlohmann::json::parse(m_file);
+    m_dataset_size = m_j_file.size();
 }
 
-void AxialForceDataset::get_data(std::string data_n)
-{
 
-    auto it_des = m_j_file.find(data_n);
-    // nlohmann::json &val = it_des.value();
-    parse_json(it_des.value());
+
+/**************** Methods *****************/
+
+void AxialForceDataset::get_data(std::string data_id)
+{
+    auto val = m_j_file[data_id];
+    parse_json(val);
 }
 
 
@@ -166,6 +147,7 @@ void AxialForceDataset::parse_json(nlohmann::json &val)
 
     // std::cout << m_tissue_desription[biol_tissue_chars::organ][] << std::endl;
     }
+    std::cout << m_tissue_type << std::endl;
 }
 
 

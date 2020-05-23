@@ -1,0 +1,33 @@
+
+"Data1" :
+{
+    "Source" : 
+    {
+        "Author": "Okamura, Simone", 
+        "Paper Title": "Force modeling for needle insertion into soft tissue", 
+        "Year": 2001, 
+        "DOI": "10.1109/TBME.2004.831542"
+    },
+
+    "Needle Characteristics":
+    {
+        "Needle Diameter": 18, 
+        "Tip Type": "Beveled", 
+        "Tip Angle": 10, 
+        "Tip Sharpness": "Uknown",
+        "Tip Lubrication": "Uknown"
+    },
+
+    "Tissue Characteristics":
+    {
+        "Tissue Type": "Artificial", 
+        "Layers Number": 1,
+        "Tissue Description":
+        {
+            "Name": "[PVA, PVA]",
+            "Components" : [
+                "Gelatin1, Gelatin2", 
+                "Gelatin2", "Gelatin3"],
+            "Concentration" : [1, 2, 3]
+        }  
+    } 
