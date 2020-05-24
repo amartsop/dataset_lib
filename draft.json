@@ -21,13 +21,21 @@
     "Tissue Characteristics":
     {
         "Tissue Type": "Artificial", 
-        "Layers Number": 1,
+        "Layers Number": 2,
         "Tissue Description":
         {
-            "Name": "[PVA, PVA]",
-            "Components" : [
-                "Gelatin1, Gelatin2", 
-                "Gelatin2", "Gelatin3"],
-            "Concentration" : [1, 2, 3]
+            "Name": ["PVA", "PVA"],
+            "Components" : [ "Gelatin1, Gelatin2", "Gelatin2", "Gelatin3"],
+            "Concentration" : ["1", "2"]
         }  
     } 
+}
+
+
+
+"Insertion Pitch Direction":
+{
+    "Type": "Constant",
+    "Dependence": null,
+    "File": "direction.csv" 
+},
