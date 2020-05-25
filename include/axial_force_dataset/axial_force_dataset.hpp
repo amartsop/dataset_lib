@@ -4,7 +4,7 @@
 #include <armadillo>
 #include "include/armaext.hpp"
 #include "./include/nlohmann/json.hpp"
-
+#include "./include/matplot/matplot.hpp"
 
 class AxialForceDataset
 {
@@ -27,16 +27,19 @@ private:
     nlohmann::json m_j_file;
 
 private:
-    
+
+    // Parsing    
     void parse_source_section(nlohmann::json &val);
     void parse_needle_section(nlohmann::json &val);
     void parse_tissue_section(nlohmann::json &val);
     void parse_meas_section(nlohmann::json &val);
+
+    // Measurements processing
     void measurements_processing(void);
     void linear_extr_correction(arma::fmat *tbe_mat, arma::fmat *full_mat);
     float linear_extrapolation(float tn, arma::fvec t_vec, arma::fvec f_vec);
     void resampling(arma::fmat *matr, float ts);
-    // void map_str_to_variable(std::string in_str, arma::fvec x);
+    void map_str_to_variable(std::string in_str, arma::fvec x);
 
 private:
    
@@ -78,19 +81,26 @@ private:
     /* Measurement section variables */
     enum class meas_index
     {
-        displ_x, vel_x, rot_x, force_x, total
+        time, displ_x, vel_x, rot_x, force_x, total
     };
 
-    float m_sampling_frequency;
+    // Measurements types
+    std::string m_meas_ans[5] = {"Time", "Displacement x", "Velocity x", 
+        "Rotation x", "Force x"};
+    
     std::vector<std::vector<std::string>> m_meas_ind_vars;
     std::vector<std::vector<std::string>> m_meas_dep_vars;
     std::vector<std::vector<std::string>> m_meas_file;
     int m_file_num;
+   
+    float m_sampling_frequency;
+    u_int64_t m_meas_size;
     std::vector<arma::fmat> m_x_y;
     arma::fvec m_time;
     arma::fvec m_displ_x;
     arma::fvec m_vel_x;
     arma::fvec m_rot_x;
+    arma::fvec m_force_x;
 
 protected:
     /* Standard types */
@@ -119,9 +129,6 @@ protected:
     // Biological tissue states
     std::string m_state_ans[2] = {"In vivo", "Ex vivo"};
 
-    // Measurements types
-    std::string m_meas_ans[4] = {"Displacement x", "Velocity x", 
-        "Rotation x", "Force x"};
 
 };
 
@@ -212,6 +219,7 @@ void AxialForceDataset::parse_meas_section(nlohmann::json &val)
         ArmaExt::sortrows<arma::fmat>(&x_y_data, true);
         m_x_y.push_back(x_y_data);
     }
+
     measurements_processing();
 }
 
@@ -236,20 +244,63 @@ void AxialForceDataset::measurements_processing(void)
         linear_extr_correction(&m_x_y.at(index), &m_x_y.at(index_max));
         resampling(&m_x_y.at(index), sampling_period);
     }
-
     resampling(&m_x_y.at(index_max), sampling_period);
 
+    // Size of measuremets 
+    m_meas_size = (m_x_y.at(0)).n_rows;
+
+    for(int i = 0; i < m_file_num; i++)
+    {
+        arma::fmat x_y_mat = m_x_y.at(i); 
+        
+        arma::fvec x_vec = x_y_mat.col(0);
+        map_str_to_variable(m_meas_ind_vars[0][i], x_vec);
+
+        arma::fvec y_vec = x_y_mat.col(1);
+        map_str_to_variable(m_meas_dep_vars[0][i], y_vec);
+    }
+
+    // Check constants
+
+}
+
+
+void AxialForceDataset::map_str_to_variable(std::string in_str, arma::fvec x)
+{
+    if (in_str.compare(m_meas_ans[static_cast<int>(meas_index::time)]) == 0)
+    {
+        m_time = x;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::displ_x)]) == 0)
+    {
+        m_displ_x = x;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::vel_x)]) == 0)
+    {
+        m_vel_x = x;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::rot_x)]) == 0)
+    {
+        m_rot_x = x;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::force_x)]) == 0)
+    {
+        m_force_x = x;
+    }
+    
 }
 
 
 void AxialForceDataset::linear_extr_correction(arma::fmat *tbe_mat, 
     arma::fmat *full_mat)
 {
-    arma::fvec x_tbe = tbe_mat->col(0);
-    arma::fvec y_tbe = tbe_mat->col(1);
+    arma::fvec x_tbe = tbe_mat->col(0); arma::fvec y_tbe = tbe_mat->col(1);
 
-    arma::fvec x_full = full_mat->col(0);
-    arma::fvec y_full = full_mat->col(1);
+    arma::fvec x_full = full_mat->col(0); arma::fvec y_full = full_mat->col(1);
 
     float extra_x = x_full.back();
     float extra_y = linear_extrapolation(extra_x, x_tbe, y_tbe);
@@ -302,19 +353,6 @@ void AxialForceDataset::resampling(arma::fmat *matr, float ts)
     
     (*matr) = mat_u;
 }
-// void AxialForceDataset::map_str_to_variable(std::string in_str, arma::fvec x)
-// {
-//     // if (in_str.compare(m_meas_ans[static_cast<int>(meas_index::displ_x)]) == 0)
-//     // {
-//     //     m_displ_x = x;
-//     // }
-
-//     // else if (in_str.compare(m_meas_ans[static_cast<int>(meas_index::displ_x)]) == 0)
-//     // {
-//     //     m_displ_x = x;
-//     // }
-
-// }
 
 
 AxialForceDataset::~AxialForceDataset()
