@@ -339,8 +339,22 @@ fstream
 -
 vector
 -
+armadillo
+-
+include/armaext.hpp
+/home/thanos/Desktop/axial_needle_insertion_database/./include/axial_force_dataset/include/armaext.hpp
 ./include/nlohmann/json.hpp
 /home/thanos/Desktop/axial_needle_insertion_database/./include/axial_force_dataset/./include/nlohmann/json.hpp
+
+/home/thanos/Desktop/axial_needle_insertion_database/./include/axial_force_dataset/include/armaext.hpp
+iostream
+-
+armadillo
+-
+vector
+-
+fstream
+-
 
 /home/thanos/Desktop/axial_needle_insertion_database/main.cpp
 iostream

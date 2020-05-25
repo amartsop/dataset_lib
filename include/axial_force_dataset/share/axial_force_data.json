@@ -33,12 +33,57 @@
 
     "Measurements":
     {
-        "Displacement x": {"Type": "Varying", "Dependence": "Uknown", "File": "Uknown"},
-        "Velocity x": {"Type": "Constant", "Dependence": "Uknown", "File": "velocity_x.csv"},
-        "Rotation x": {"Type": "Constant", "Dependence": "Uknown", "File": "Uknown"},
-        "Force x": {"Type": "Varying", "Dependence": "Displacement x", "File": "depth_force.csv"}
+        "Sampling Frequency" : 1000,
+        "Indepedent Variables": ["Displacement x"],
+        "Depedent Variables": ["Force x"],
+        "Files Names": ["depth_force.csv"],
+        "Constants": ["Velocity x", "Rotation x"],
+        "Constants Values": [0.003, 0.00]
+    }
+},
+
+"Data1" : 
+{
+    "Source" : 
+    {
+        "Author": "Okamura, Simone", 
+        "Paper Title": "Force modeling for needle insertion into soft tissue", 
+        "Year": 2001, 
+        "DOI": "10.1109/TBME.2004.831542"
+    },
+
+    "Needle Characteristics":
+    {
+        "Needle Diameter": 18, 
+        "Tip Type": "Beveled", 
+        "Tip Angle": 10, 
+        "Tip Sharpness": "Uknown",
+        "Tip Lubrication": "Uknown"
+    },
+
+    "Tissue Characteristics":
+    {
+        "Tissue Type": "Biological", 
+        "Layers Number": 2,
+        "Tissue Description":
+        {
+            "Organ/Location": ["Liver", "Heart"],
+            "Animal": ["Bovine Specimen", "Bovine Specimen"],
+            "State": ["Ex vivo", "Ex vivo"]
+        }  
+    },
+
+    "Measurements":
+    {
+        "Sampling Frequency" : 1000,
+        "Indepedent Variables": ["Time", "Time"],
+        "Depedent Variables": ["Displacement x", "Force x"],
+        "Files Names": ["time_displacement.csv", "time_force.csv"],
+        "Constants": ["Velocity x", "Rotation x"],
+        "Constants Values": [0.003, 0.00]
     }
 }
+
 
 
 }

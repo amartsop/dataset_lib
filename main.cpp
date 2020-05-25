@@ -3,11 +3,12 @@
 #include <vector>
 #include "./include/axial_force_dataset/axial_force_dataset.hpp"
 
+
 int main(int argc, char *argv[])
 {
 
-    std::vector<std::string> data_vec = {"Data0"};
-    
+    std::vector<std::string> data_vec = {"Data1"};
+
     // std::string data_vec = "Data1";
     
     AxialForceDataset axial_data[1];

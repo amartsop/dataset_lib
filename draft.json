@@ -39,3 +39,21 @@
     "Dependence": null,
     "File": "direction.csv" 
 },
+
+
+    "Measurements":
+    {
+        "Displacement x": {"Type": "Varying", "Dependence": "Uknown", "File": "Uknown"},
+        "Velocity x": {"Type": "Constant", "Dependence": "Uknown", "File": "velocity_x.csv"},
+        "Rotation x": {"Type": "Constant", "Dependence": "Uknown", "File": "rotation_x.csv"},
+        "Force x": {"Type": "Varying", "Dependence": "Displacement x", "File": "depth_force.csv"}
+    }
+
+
+    for (int i = 0; i < static_cast<int>(meas_index::total); i++)
+    { 
+        auto &meas_handle = val["Measurements"][m_meas_ans[i]];
+        m_meas_types[i] = meas_handle.at("Type");
+        m_meas_dependence[i] = meas_handle.at("Dependence");
+        m_meas_file[i] = meas_handle.at("File");
+    }
