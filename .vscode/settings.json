@@ -68,7 +68,9 @@
         "*.ipp": "cpp",
         "*.txx": "cpp",
         "core": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "hash_map": "cpp",
+        "forward_list": "cpp"
     },
     "python.pythonPath": "/usr/bin/python2.7"
 }

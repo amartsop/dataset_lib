@@ -12,9 +12,48 @@ public:
     AxialForceDataset(); 
     ~AxialForceDataset();
 
-    // Getters
+    void data_parsing(std::string data_id);
+
+    /* Getters */
     u_int64_t get_dataset_size(void) { return m_dataset_size; }
-    void get_data(std::string data_id);
+    std::string get_data_id(void) { return m_data_id; }
+
+    // Source section getters
+    std::string get_author_name(void) { return m_author_name; }
+    std::string get_paper_title(void) { return m_paper_title; }
+    int get_publication_year(void) { return m_year; }
+    std::string get_publication_doi(void) { return m_doi; }
+
+    // Needle characteristics getters
+    float get_needle_diameter(void) { return m_needle_diameter; }
+    std::string get_needle_tip_type(void) { return m_tip_type; }
+    float get_needle_tip_angle(void) { return m_tip_anlge; }
+    std::string get_needle_sharpness(void) { return m_tip_sharpness; }
+    std::string get_tip_lubrication_state(void) { return m_tip_lubrication; }
+
+    // Tissue characteristics getters
+    std::string get_tissue_type(void) { return m_tissue_type; }
+    int get_tissue_layers_number(void) { return m_layers_num; }
+    bool is_tissue_multilayer(void) {return m_multilayer; } 
+
+    std::vector<std::vector<std::string>> get_tissue_description(void) { 
+        return m_tissue_desription; 
+    } 
+
+    // Measurement section getters
+    int get_files_num(void) { return m_file_num; }
+    float get_sampling_frequency(void) { return m_sampling_frequency; }
+
+    arma::fvec get_time(void) { return m_time; };
+    arma::fvec get_displ_x(void) { return m_displ_x; }
+    arma::fvec get_vel_x(void) { return m_vel_x; }
+    arma::fvec get_rot_x(void) { return m_rot_x; }
+    arma::fvec get_force_x(void) { return m_force_x; }
+
+    // Constants
+    bool is_displ_x_const(void) { return m_const_displ_x; }
+    bool is_vel_x_const(void) { return m_const_vel_x; }
+    bool is_rot_x_const(void) { return m_const_rot_x; }
 
 private:
 
@@ -40,6 +79,8 @@ private:
     float linear_extrapolation(float tn, arma::fvec t_vec, arma::fvec f_vec);
     void resampling(arma::fmat *matr, float ts);
     void map_str_to_variable(std::string in_str, arma::fvec x);
+    void map_str_to_constant(std::string in_str);
+    arma::fvec central_diff_derivative(arma::fvec t_vec, arma::fvec x_vec);
 
 private:
    
@@ -91,10 +132,13 @@ private:
     std::vector<std::vector<std::string>> m_meas_ind_vars;
     std::vector<std::vector<std::string>> m_meas_dep_vars;
     std::vector<std::vector<std::string>> m_meas_file;
+    std::vector<std::vector<std::string>> m_meas_const;
+    std::vector<std::vector<float>> m_meas_const_val;
+
     int m_file_num;
-   
     float m_sampling_frequency;
     u_int64_t m_meas_size;
+
     std::vector<arma::fmat> m_x_y;
     arma::fvec m_time;
     arma::fvec m_displ_x;
@@ -102,12 +146,17 @@ private:
     arma::fvec m_rot_x;
     arma::fvec m_force_x;
 
+    //Constants
+    bool m_const_displ_x = false;
+    bool m_const_vel_x = false;
+    bool m_const_rot_x = false;
+
 protected:
     /* Standard types */
 
     // Standard tip types
-    std::string m_tip_types_ans[7] = {"Blunt", "Beveled", "Conical", 
-        "Sprotte", "Diamond", "Tuohy", "Uknown"};
+    std::string m_tip_types_ans[8] = {"Blunt", "Beveled", "Conical", 
+        "Sprotte", "Diamond", "Tuohy", "Franseen", "Uknown"};
 
     // Sharpness classification
     std::string m_sharpness_ans[3] = {"Sharp", "Blunt", "Uknown"};
@@ -129,7 +178,6 @@ protected:
     // Biological tissue states
     std::string m_state_ans[2] = {"In vivo", "Ex vivo"};
 
-
 };
 
 
@@ -146,7 +194,7 @@ AxialForceDataset::AxialForceDataset()
 
 /**************** Methods *****************/
 
-void AxialForceDataset::get_data(std::string data_id)
+void AxialForceDataset::data_parsing(std::string data_id)
 {
     m_data_id = data_id;
     auto val = m_j_file[data_id];
@@ -186,6 +234,9 @@ void AxialForceDataset::parse_tissue_section(nlohmann::json &val)
     m_multilayer = (m_layers_num > 1);
 
     auto &tissue_descr = val["Tissue Characteristics"]["Tissue Description"];
+
+    const bool tissue_cond = m_tissue_type.compare(m_tissue_types_ans[0]) == 0;
+    
     if (m_tissue_type.compare(m_tissue_types_ans[0]) == 0)
     {
         m_tissue_desription.push_back(tissue_descr.at("Organ/Location"));
@@ -210,6 +261,8 @@ void AxialForceDataset::parse_meas_section(nlohmann::json &val)
     m_meas_dep_vars.push_back(meas_handle.at("Depedent Variables"));
     m_meas_file.push_back(meas_handle.at("Files Names"));
     m_file_num = m_meas_file[0].size();
+    m_meas_const.push_back(meas_handle.at("Constants"));
+    m_meas_const_val.push_back(meas_handle.at("Constants Values"));
 
     for(int i = 0; i < m_file_num; i++)
     {
@@ -260,8 +313,42 @@ void AxialForceDataset::measurements_processing(void)
         map_str_to_variable(m_meas_dep_vars[0][i], y_vec);
     }
 
-    // Check constants
+    // Constants
+    int const_size = m_meas_const[0].size();
+    bool const_vel = false;
+    
+    for (int i = 0; i < const_size; i++)
+    {
+        arma::fvec const_vec = arma::zeros<arma::fvec>(m_meas_size); 
+        const_vec.fill(m_meas_const_val[0][i]);
+        map_str_to_variable(m_meas_const[0][i], const_vec);
+        map_str_to_constant(m_meas_const[0][i]);
+    }
 
+    // Estimate time
+    std::string time_str = m_meas_ans[static_cast<int>(meas_index::time)];
+    
+    if (m_meas_ind_vars[0][0].compare(time_str) != 0 && m_const_vel_x)
+    {
+       arma::fmat time_vec = m_displ_x /  m_vel_x[0];
+        map_str_to_variable(time_str, time_vec);
+    }
+
+    // Estimate velocity (see if velocity belongs to the depedent variables)
+    std::string vel_x_str = m_meas_ans[static_cast<int>(meas_index::vel_x)];
+    int16_t vel_x_dep = 0;
+
+    for(int i = 0; i < m_file_num; i++)
+    {
+        if(!vel_x_str.compare(m_meas_dep_vars[0][i])) { vel_x_dep |= (1 << i);}
+    }
+
+    if(!(m_meas_ind_vars[0][0].compare(time_str)) && (vel_x_dep == 0) 
+        && !m_const_vel_x)
+    {
+        arma::fvec vel_x_vec = central_diff_derivative(m_time, m_displ_x);
+        map_str_to_variable(vel_x_str, vel_x_vec);
+    }
 }
 
 
@@ -290,6 +377,27 @@ void AxialForceDataset::map_str_to_variable(std::string in_str, arma::fvec x)
     if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::force_x)]) == 0)
     {
         m_force_x = x;
+    }
+    
+}
+
+
+void AxialForceDataset::map_str_to_constant(std::string in_str)
+{
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::displ_x)]) == 0)
+    {
+        m_const_displ_x = true;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::vel_x)]) == 0)
+    {
+        m_const_vel_x = true;
+    }
+
+    if(in_str.compare(m_meas_ans[static_cast<int>(meas_index::rot_x)]) == 0)
+    {
+        m_const_rot_x = true;
     }
     
 }
@@ -354,6 +462,38 @@ void AxialForceDataset::resampling(arma::fmat *matr, float ts)
     (*matr) = mat_u;
 }
 
+arma::fvec AxialForceDataset::central_diff_derivative(arma::fvec t_vec, 
+    arma::fvec x_vec)
+{
+    arma::fvec u_vec(t_vec.n_rows); u_vec.fill(0);
+
+    for (u_int64_t i = 0; i < t_vec.n_rows; i++)
+    {
+        float to, tn, xo, xn;
+
+        if (i == 0)
+        {
+            to = 0.0; tn = t_vec(i + 1);
+            xo = 0.0; xn = x_vec(i + 1);
+        }
+        else if (i == t_vec.n_rows - 1)
+        {
+            to = t_vec(i); tn = 0.0;
+            xo = x_vec(i); xn = 0.0;
+        }
+        else
+        {
+            to = t_vec(i - 1); tn = t_vec(i + 1);
+            xo = x_vec(i - 1); xn = x_vec(i + 1);
+        }
+
+        float step = tn - to; 
+        if (step == 0) { step = 10e-6; }
+        u_vec(i) = (xn - xo) / (2 * step);
+    }
+
+    return u_vec;
+}
 
 AxialForceDataset::~AxialForceDataset()
 {

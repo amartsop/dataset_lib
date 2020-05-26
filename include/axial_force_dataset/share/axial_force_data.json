@@ -79,7 +79,7 @@
         "Indepedent Variables": ["Time", "Time"],
         "Depedent Variables": ["Displacement x", "Force x"],
         "Files Names": ["time_displacement.csv", "time_force.csv"],
-        "Constants": ["Velocity x", "Rotation x"],
+        "Constants": ["Rotation x"],
         "Constants Values": [0.003, 0.00]
     }
 }

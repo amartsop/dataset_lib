@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Optimization parameters
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "-Os")
 
 # Python linking
 find_package(PythonLibs 2.7)
