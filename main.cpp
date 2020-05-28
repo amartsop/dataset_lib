@@ -17,7 +17,13 @@ int main(int argc, char *argv[])
     for (int i = 0; i < sizeof(axial_data) / sizeof(axial_data[0]); i++)
     {
         axial_data[i].data_parsing(data_vec[i]);
-        auto a = axial_data[i].get_tissue_description();
+
+        if (axial_data[i].is_tissue_biological())
+        {
+            auto tissue_description = axial_data[i].get_tissue_description();
+            int organ = axial_data[i].bio_tissue_organ_index;
+            std::cout << tissue_description[organ][1] << std::endl;
+        }
     }
 
 

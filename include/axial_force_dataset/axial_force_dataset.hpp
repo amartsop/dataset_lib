@@ -4,17 +4,26 @@
 #include <armadillo>
 #include "include/armaext.hpp"
 #include "./include/nlohmann/json.hpp"
-#include "./include/matplot/matplot.hpp"
 
+
+/**
+ * The class parses and generates datasets that describe the dynamics of needle 
+ * insertion into soft tissue.
+**/
 class AxialForceDataset
 {
 public:
+
     AxialForceDataset(); 
     ~AxialForceDataset();
 
+    /**
+     * Parses the data file specified by data_id.
+     * @param data_id The folder in which the data is located.
+    **/
     void data_parsing(std::string data_id);
 
-    /* Getters */
+    // Getters 
     u_int64_t get_dataset_size(void) { return m_dataset_size; }
     std::string get_data_id(void) { return m_data_id; }
 
@@ -35,7 +44,7 @@ public:
     std::string get_tissue_type(void) { return m_tissue_type; }
     int get_tissue_layers_number(void) { return m_layers_num; }
     bool is_tissue_multilayer(void) {return m_multilayer; } 
-
+    bool is_tissue_biological(void) {return m_biological; }
     std::vector<std::vector<std::string>> get_tissue_description(void) { 
         return m_tissue_desription; 
     } 
@@ -55,15 +64,24 @@ public:
     bool is_vel_x_const(void) { return m_const_vel_x; }
     bool is_rot_x_const(void) { return m_const_rot_x; }
 
-private:
+public:
+    const int bio_tissue_organ_index = 0; /// Index of organ definition for biological tissue.
+    const int bio_tissue_animal_index = 1; /// Index of animal definition for biological tissue.
+    const int bio_tissue_state_index = 2; /// Index of state definition for biological tissue.
 
+    const int art_tissue_name_index = 0; /// Index of name definition for artificial tissue
+    const int art_tissue_components_index = 0; /// Index of components definition for artificial tissue.
+    const int art_tissue_concentration_index = 0; /// Index of concentration definition for artificial tissue.
+    
+private:
+    
     const std::string m_lib_rel_path = "./include/axial_force_dataset/";
     const std::string m_share_rel_dir = m_lib_rel_path + "share/";
     const std::string m_data_file = m_share_rel_dir + "axial_force_data.json";
 
     // File handlers
-    std::ifstream m_file;
-    nlohmann::json m_j_file;
+    std::ifstream m_file; /// File handler for std.
+    nlohmann::json m_j_file; /// File handler for json.
 
 private:
 
@@ -97,9 +115,9 @@ private:
     std::string m_doi;
 
     /* Needle characteristics section variables */
-    float m_needle_diameter; //(G)
+    float m_needle_diameter;
     std::string m_tip_type;
-    float m_tip_anlge; // (deg)
+    float m_tip_anlge;
     std::string m_tip_sharpness; 
     std::string m_tip_lubrication;
 
@@ -107,17 +125,9 @@ private:
     std::string m_tissue_type;
     int m_layers_num;
     bool m_multilayer;
+    bool m_biological;
     std::vector<std::vector<std::string>> m_tissue_desription;
     
-    enum class biol_tissue_chars
-    {
-        organ, animal, state
-    };
-
-    enum class art_tissue_chars
-    {
-        name, components, concentration
-    };
 
     /* Measurement section variables */
     enum class meas_index
@@ -191,7 +201,6 @@ AxialForceDataset::AxialForceDataset()
     m_dataset_size = m_j_file.size();
 }
 
-
 /**************** Methods *****************/
 
 void AxialForceDataset::data_parsing(std::string data_id)
@@ -239,12 +248,14 @@ void AxialForceDataset::parse_tissue_section(nlohmann::json &val)
     
     if (m_tissue_type.compare(m_tissue_types_ans[0]) == 0)
     {
+        m_biological = true;
         m_tissue_desription.push_back(tissue_descr.at("Organ/Location"));
         m_tissue_desription.push_back(tissue_descr.at("Animal"));
         m_tissue_desription.push_back(tissue_descr.at("State"));
     }
 
     else {
+        m_biological = false;
         m_tissue_desription.push_back(tissue_descr.at("Name"));
         m_tissue_desription.push_back(tissue_descr.at("Components"));
         m_tissue_desription.push_back(tissue_descr.at("Concentration"));
