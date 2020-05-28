@@ -18,6 +18,10 @@ int main(int argc, char *argv[])
     {
         axial_data[i].data_parsing(data_vec[i]);
 
+        arma::fvec time = axial_data[i].get_time();
+        arma::fvec displacemt_x = axial_data[i].get_displ_x();
+
+
         if (axial_data[i].is_tissue_biological())
         {
             auto tissue_description = axial_data[i].get_tissue_description();

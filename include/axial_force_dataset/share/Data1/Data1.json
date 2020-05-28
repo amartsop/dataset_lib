@@ -1,7 +1,4 @@
-{
-"Data1" : 
-{
-    "Source" : 
+{ "Data1" : { "Source" : 
     {
         "Author": "Okamura, Simone", 
         "Paper Title": "Force modeling for needle insertion into soft tissue", 
@@ -28,8 +25,8 @@
             "Animal": ["Bovine Specimen", "Bovine Specimen"],
             "State": ["Ex vivo", "Ex vivo"]
         }  
-    },
-
+    }, 
+ 
     "Measurements":
     {
         "Sampling Frequency" : 1000,

@@ -77,7 +77,6 @@ private:
     
     const std::string m_lib_rel_path = "./include/axial_force_dataset/";
     const std::string m_share_rel_dir = m_lib_rel_path + "share/";
-    const std::string m_data_file = m_share_rel_dir + "axial_force_data.json";
 
     // File handlers
     std::ifstream m_file; /// File handler for std.
@@ -193,18 +192,23 @@ protected:
 
 AxialForceDataset::AxialForceDataset()
 {
-    // Read json file
-    m_file = std::ifstream(m_data_file);
-    m_j_file = nlohmann::json::parse(m_file);
-    
-    // Dataset file
-    m_dataset_size = m_j_file.size();
 }
 
 /**************** Methods *****************/
 
 void AxialForceDataset::data_parsing(std::string data_id)
 {
+    // File name 
+    std::string file_name = m_share_rel_dir + data_id + "/" + data_id + ".json";
+
+    // Read json file
+    m_file = std::ifstream(file_name);
+    m_j_file = nlohmann::json::parse(m_file);
+
+    // Dataset file
+    m_dataset_size = m_j_file.size();
+    
+    // Parsing json file 
     m_data_id = data_id;
     auto val = m_j_file[data_id];
     parse_source_section(val);
